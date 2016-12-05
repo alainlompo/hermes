@@ -5,6 +5,7 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionFetchingConfiguration;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.client.HermesClient;
@@ -259,6 +260,24 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // then
         assertThat(subscriptionHealth).isEqualTo(SubscriptionHealth.NO_DATA);
+    }
+
+    @Test
+    public void shouldConfigureCustomMaxPartitionFetchBytes() {
+        // given
+        Topic topic = operations.buildTopic("fetch", "topic");
+        SubscriptionFetchingConfiguration fetchingConfiguration = new SubscriptionFetchingConfiguration(256 * 1024);
+
+        Subscription subscription = subscription("fetch.topic", "subscription", HTTP_ENDPOINT_URL)
+                .withFetchingConfiguration(fetchingConfiguration)
+                .build();
+        operations.createSubscription(topic, subscription);
+
+        // when
+        Subscription sub = management.subscription().get(subscription.getQualifiedTopicName(), subscription.getName());
+
+        // then
+        assertThat(fetchingConfiguration).isEqualTo(sub.getFetchingConfiguration());
     }
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {

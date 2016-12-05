@@ -43,6 +43,8 @@ public class SubscriptionBuilder {
 
     private SubscriptionOAuthPolicy oAuthPolicy;
 
+    private SubscriptionFetchingConfiguration fetchingConfiguration = new SubscriptionFetchingConfiguration();
+
     private SubscriptionBuilder(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
         this.topicName = topicName;
         this.name = subscriptionName;
@@ -88,14 +90,14 @@ public class SubscriptionBuilder {
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy,
                     trackingEnabled, supportTeam, contact, monitoringDetails, contentType,
-                    filters, mode, headers, metadata, oAuthPolicy
+                    filters, mode, headers, metadata, oAuthPolicy, fetchingConfiguration
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy,
                     trackingEnabled, supportTeam, contact, monitoringDetails, contentType,
-                    filters, headers, metadata, oAuthPolicy
+                    filters, headers, metadata, oAuthPolicy, fetchingConfiguration
             );
         }
     }
@@ -192,6 +194,11 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withOAuthPolicy(SubscriptionOAuthPolicy oAuthPolicy) {
         this.oAuthPolicy = oAuthPolicy;
+        return this;
+    }
+
+    public SubscriptionBuilder withFetchingConfiguration(SubscriptionFetchingConfiguration fetchingConfiguration) {
+        this.fetchingConfiguration = fetchingConfiguration;
         return this;
     }
 }

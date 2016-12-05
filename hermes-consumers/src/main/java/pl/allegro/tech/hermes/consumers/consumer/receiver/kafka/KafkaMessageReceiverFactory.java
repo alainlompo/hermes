@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionFetchingConfiguration;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -22,6 +23,7 @@ import javax.inject.Inject;
 import java.time.Clock;
 import java.util.Properties;
 
+import static java.lang.Math.*;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
@@ -63,7 +65,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                                                  ConsumerRateLimiter consumerRateLimiter) {
 
         MessageReceiver receiver = new KafkaSingleThreadedMessageReceiver(
-                createKafkaConsumer(kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName())),
+                createKafkaConsumer(subscription),
                 messageContentWrapper,
                 hermesMetrics,
                 schemaRepository,
@@ -85,7 +87,8 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         return receiver;
     }
 
-    private KafkaConsumer<byte[], byte[]> createKafkaConsumer(ConsumerGroupId groupId) {
+    private KafkaConsumer<byte[], byte[]> createKafkaConsumer(Subscription subscription) {
+        ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName());
         Properties props = new Properties();
         props.put(GROUP_ID_CONFIG, groupId.asString());
         props.put(ENABLE_AUTO_COMMIT_CONFIG, "false");
@@ -98,7 +101,11 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         props.put(SESSION_TIMEOUT_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG));
         props.put(HEARTBEAT_INTERVAL_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG));
         props.put(METADATA_MAX_AGE_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_METADATA_MAX_AGE_CONFIG));
-        props.put(MAX_PARTITION_FETCH_BYTES_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES_CONFIG));
+
+        SubscriptionFetchingConfiguration fetchingConfiguration = subscription.getFetchingConfiguration();
+        int globalMaxBytes = configs.getIntProperty(Configs.KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES_CONFIG);
+        props.put(MAX_PARTITION_FETCH_BYTES_CONFIG, min(fetchingConfiguration.getMaxPartitionFetchBytes(), globalMaxBytes));
+
         props.put(SEND_BUFFER_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_SEND_BUFFER_CONFIG));
         props.put(RECEIVE_BUFFER_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_RECEIVE_BUFFER_CONFIG));
         props.put(FETCH_MIN_BYTES_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_FETCH_MIN_BYTES_CONFIG));

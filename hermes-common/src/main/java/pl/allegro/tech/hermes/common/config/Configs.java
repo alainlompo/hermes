@@ -49,7 +49,7 @@ public enum Configs {
     KAFKA_CONSUMER_METRICS_NUM_SAMPLES_CONFIG("kafka.consumer.metrics.num.samples", 2),
     KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG("kafka.consumer.request.timeout.ms", 250_000),
     KAFKA_CONSUMER_CONNECTIONS_MAX_IDLE_MS_CONFIG("kafka.consumer.connections.max.idle.ms", 9 * 60 * 1000),
-    KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG("kafka.consumer.max.poll.records", 10),
+    KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG("kafka.consumer.max.poll.records", 1),
 
     KAFKA_SIMPLE_CONSUMER_TIMEOUT_MS("kafka.simple.consumer.timeout.ms", 5000),
     KAFKA_SIMPLE_CONSUMER_BUFFER_SIZE("kafka.simple.consumer.buffer.size", 64 * 1024),
